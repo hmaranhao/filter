@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { Menu } from '@material-ui/icons'
 import {
@@ -18,11 +18,15 @@ function Filter ({
   const [itemsFilter, setItemsFilter] = useState(items ?? [])
   const [filtersSelecteds, setFiltersSelecteds] = useState([])
 
-  const clearFilters = () => {
+  const clearFilters = async () => {
     const newItems = itemsFilter.map(i => {
+      if(i.tags){
+        return { ...i, checked: false, tags: i.tags.map(x => ({...x, checked: false })) }
+      }
       return { ...i, checked: false }
     })
     setItemsFilter(newItems)
+    setFiltersSelecteds([])
   }
 
   const applyFilters = () => {
@@ -44,6 +48,19 @@ function Filter ({
     setFiltersSelecteds(filter)
   }
 
+  const removeFilter = filter => {
+    const newItems = itemsFilter.map(f => {
+      if(f.tags){
+        f.tags.forEach(ff => removeFilter(ff))
+      }
+      if(f.tag === filter){
+        return {... f, checked: false}
+      }
+      return f
+    })
+    setItemsFilter(newItems)
+  }
+
   return (
     <div
       style={{
@@ -62,6 +79,7 @@ function Filter ({
         <ChipsFilters
           filtersSelecteds={filtersSelecteds}
           setItemsFilter={setItemsFilter}
+          removeFilter={removeFilter}
           clearFilters={clearFilters}
         />
       </div>
